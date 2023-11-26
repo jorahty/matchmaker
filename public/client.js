@@ -1,4 +1,8 @@
-var socket = io();
+var socket = io.connect();
+
+socket.on('connect', () => {
+  console.log(socket.id);
+});
 
 button.onclick = () => {
   if (socket) {
@@ -8,12 +12,14 @@ button.onclick = () => {
     msg.innerHTML = '&nbsp;';
   } else {
     socket = io();
+    console.log(socket.id);
     button.textContent = 'Cancel';
     msg.textContent = 'Searching...';
   }
 };
 
 socket.on('invite', (ip, port) => {
+  console.log('invite!');
   document.body.innerHTML = `<p><b>${ip}:${port}</b></p>`;
-  socket.disconnect();
+  // socket.disconnect();
 });

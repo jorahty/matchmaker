@@ -1,7 +1,6 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import queue from './queue.js';
 import allocate from './allocate.js';
 
 const app = express();
@@ -10,26 +9,38 @@ const io = new Server(server);
 
 app.use(express.static('public'));
 
-export const playersPerMatch = 5;
+const players_per_match = 2;
+
+const queue = [];
 
 io.on('connect', (socket) => {
   queue.push(socket);
+  render('push');
 
-  checkQueue();
+  if (queue.length === players_per_match) {
+    const sockets = queue.splice(0, players_per_match);
+    render('clear');
+
+    handle(sockets);
+  }
 
   socket.on('disconnect', () => {
-    queue.remove(socket);
+    queue.splice(queue.indexOf(socket), 1);
+    render('remove');
   });
 });
 
-async function checkQueue() {
-  if (queue.length === playersPerMatch) {
-    const { ip, port } = await allocate();
+async function handle(sockets) {
+  const { ip, port } = await allocate();
 
-    for (const socket of queue.items) socket.emit('invite', ip, port);
+  sockets.forEach((socket) => {
+    socket.emit('invite', ip, port);
+    console.log(`invite ${socket.id.slice(0, 3)}`);
+  });
+}
 
-    queue.clear();
-  }
+function render(msg) {
+  console.log(`${msg} queue: [${queue.map((socket) => socket.id.slice(0, 3)).join()}]`);
 }
 
 export const port = 4000;
