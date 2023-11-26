@@ -25,8 +25,11 @@ io.on('connect', (socket) => {
   }
 
   socket.on('disconnect', () => {
-    queue.splice(queue.indexOf(socket), 1);
-    render('remove');
+    const index = queue.indexOf(socket);
+    if (index !== -1) {
+      queue.splice(queue.indexOf(socket), 1);
+      render('remove');
+    }
   });
 });
 
@@ -36,6 +39,7 @@ async function handle(sockets) {
   sockets.forEach((socket) => {
     socket.emit('invite', ip, port);
     console.log(`invite ${socket.id.slice(0, 3)}`);
+    socket.disconnect();
   });
 }
 

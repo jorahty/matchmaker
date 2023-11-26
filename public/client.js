@@ -1,8 +1,20 @@
-var socket = io.connect();
+var socket;
 
-socket.on('connect', () => {
-  console.log(socket.id);
-});
+function connect() {
+  socket = io();
+
+  socket.on('connect', () => {
+    console.log(socket.id);
+  });
+
+  socket.on('invite', (ip, port) => {
+    console.log('invite!');
+    document.body.innerHTML = `<p><b>${ip}:${port}</b></p>`;
+    socket.disconnect();
+  });
+}
+
+connect();
 
 button.onclick = () => {
   if (socket) {
@@ -11,15 +23,8 @@ button.onclick = () => {
     button.textContent = 'Play';
     msg.innerHTML = '&nbsp;';
   } else {
-    socket = io();
-    console.log(socket.id);
+    connect();
     button.textContent = 'Cancel';
     msg.textContent = 'Searching...';
   }
 };
-
-socket.on('invite', (ip, port) => {
-  console.log('invite!');
-  document.body.innerHTML = `<p><b>${ip}:${port}</b></p>`;
-  // socket.disconnect();
-});
